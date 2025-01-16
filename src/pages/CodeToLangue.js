@@ -16,56 +16,47 @@ const CodeToLangue = () => {
   const fileInputRef = useRef(null);
 
   const handleFileUpload = async (event) => {
-    console.log('File upload triggered');
     const file = event.target.files[0];
     if (file) {
       try {
-        console.log('Reading file content');
         const text = await file.text();
         setInputText(text);
         setError('');
-        console.log('File content successfully read and set');
       } catch (err) {
-        console.error('Error reading file:', err);
         setError('Error reading file');
       }
     }
   };
 
   const triggerFileUpload = () => {
-    console.log('Triggering file upload');
     fileInputRef.current.click();
   };
 
   const generateFiles = async () => {
-    console.log('Generate files function called');
     if (!inputText) {
-      console.error('No input text provided');
       setError('Please enter or upload code');
       return;
     }
 
     setIsLoading(true);
     setError('');
-    console.log('Starting file generation process');
 
     try {
       // Construction du prompt pour Gemini
-      const prompt = `Translate the following code into ${selectedLanguage} and generate a ${selectedFileType} file.Please give me each file separately, don't put any other information than the json file. Also, provide translations in the following languages: ${selectedLanguages.join(', ')}. Here is the code:\n\n${inputText}`;
-      console.log('Sending prompt to Gemini:', prompt);
+      const prompt = `Extract all text strings from the following code and translate them into the following languages: ${selectedLanguages.join(', ')}. 
+      Return ONLY a JSON file with the translations, where each key is a language and each value is the translated text. 
+      Do not include any additional explanations or code. 
+      Here is the code:\n\n${inputText}`;
 
       // Appel à l'API Gemini
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent(prompt);
       const generatedText = result.response.text();
 
-      console.log('Files generated successfully:', generatedText);
       setGeneratedFiles([generatedText]); // Stocker le résultat dans l'état
     } catch (err) {
-      console.error('Error generating files:', err);
       setError('Failed to generate files');
     } finally {
-      console.log('File generation process completed');
       setIsLoading(false);
     }
   };
